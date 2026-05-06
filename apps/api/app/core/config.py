@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "CNVerse"
     ENV: str = "development"
 
-    POSTGRES_URL: str
+    DATABASE_URL: str
     REDIS_URL: str
     OPENSEARCH_URL: str
 

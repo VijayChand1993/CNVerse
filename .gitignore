@@ -23,3 +23,7 @@ dist/
 # Coverage
 coverage/
 htmlcov/
+
+# SQLite
+*.db
+*.sqlite3
