@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.session import Base
 from app.models.base import Base, TimestampMixin
+from sqlalchemy.orm import relationship
 
 
 class User(Base, TimestampMixin):
@@ -34,4 +35,9 @@ class User(Base, TimestampMixin):
         String,
         nullable=True,
         index=True,
+    )
+
+    document = relationship(
+        "Document",
+        back_populates="owner"
     )
