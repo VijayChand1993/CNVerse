@@ -41,3 +41,9 @@ class User(Base, TimestampMixin):
         "Document",
         back_populates="owner"
     )
+
+    chat_sessions = relationship(
+        "ChatSession",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
