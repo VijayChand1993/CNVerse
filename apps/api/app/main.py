@@ -4,10 +4,7 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.db.session import engine
 
-app = FastAPI(
-    title=settings.APP_NAME,
-    version="1.0.0"
-)
+app = FastAPI(title=settings.APP_NAME, version="1.0.0")
 
 
 @app.get("/health")
