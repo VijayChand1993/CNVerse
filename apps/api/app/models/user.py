@@ -1,12 +1,37 @@
 from sqlalchemy import Column, Integer, String
-
+from sqlalchemy.orm import Mapped, mapped_column
 from app.db.session import Base
+from app.models.base import Base, TimestampMixin
 
 
-class User(Base):
+class User(Base, TimestampMixin):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    role = Column(String, nullable=True)
-    department = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    email: Mapped[str] = mapped_column(
+        String,
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
+    role: Mapped[str | None] = mapped_column(
+        String,
+        nullable=True,
+    )
+
+    department: Mapped[str | None] = mapped_column(
+        String,
+        nullable=True,
+    )
+
+    tenant_id: Mapped[str | None] = mapped_column(
+        String,
+        nullable=True,
+        index=True,
+    )

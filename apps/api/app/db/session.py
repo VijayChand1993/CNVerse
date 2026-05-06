@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
-
+from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
+from app.models.base import Base
 
 DATABASE_URL = settings.DATABASE_URL
 
@@ -15,5 +15,3 @@ SessionLocal = sessionmaker(
     autoflush=False,
     bind=engine,
 )
-
-Base = declarative_base()
