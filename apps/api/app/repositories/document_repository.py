@@ -15,3 +15,11 @@ class DocumentRepository:
             .filter(Document.sha256_hash == sha256_hash)
             .first()
         )
+    
+    @staticmethod
+    def create(db: Session, document: Document):
+        db.add(document)
+        db.commit()
+        db.refresh(document)
+
+        return document

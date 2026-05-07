@@ -27,3 +27,10 @@ htmlcov/
 # SQLite
 *.db
 *.sqlite3
+
+#upload directories
+apps/api/storage/uploads/*
+!apps/api/storage/uploads/.gitkeep
+
+apps/api/storage/url_download/*
+!apps/api/storage/url_download/.gitkeep

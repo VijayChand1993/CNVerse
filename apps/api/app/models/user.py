@@ -37,7 +37,7 @@ class User(Base, TimestampMixin):
         index=True,
     )
 
-    document = relationship(
+    documents = relationship(
         "Document",
         back_populates="owner"
     )

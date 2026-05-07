@@ -2,6 +2,7 @@ from app.db.session import Base, engine
 
 # Import models here
 from app.models.user import User  # noqa
+import app.db.base
 
 
 def init_db():
