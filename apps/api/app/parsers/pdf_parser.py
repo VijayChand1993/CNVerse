@@ -4,6 +4,7 @@ import pdfplumber
 from app.schemas.parser import (
     ParsedDocument,
     ParsedPage,
+    ParsedSection,
 )
 
 
@@ -15,6 +16,7 @@ class PDFParser:
     ) -> ParsedDocument:
 
         parsed_pages = []
+        parsed_sections = []
 
         with pdfplumber.open(file_path) as pdf:
 
@@ -22,14 +24,26 @@ class PDFParser:
 
                 text = page.extract_text() or ""
 
+                cleaned_text = text.strip()
+
                 parsed_pages.append(
                     ParsedPage(
                         page_number=index + 1,
-                        text=text.strip(),
+                        text=cleaned_text,
+                    )
+                )
+
+                parsed_sections.append(
+                    ParsedSection(
+                        title=f"Page {index + 1}",
+                        content=cleaned_text,
+                        page_number=index + 1,
                     )
                 )
 
         return ParsedDocument(
+            sections=parsed_sections,
+            tables=[],
             pages=parsed_pages,
             total_pages=len(parsed_pages),
         )
@@ -40,6 +54,7 @@ class PDFParser:
     ) -> ParsedDocument:
 
         parsed_pages = []
+        parsed_sections = []
 
         document = fitz.open(file_path)
 
@@ -47,14 +62,26 @@ class PDFParser:
 
             text = page.get_text()
 
+            cleaned_text = text.strip()
+
             parsed_pages.append(
                 ParsedPage(
                     page_number=index + 1,
-                    text=text.strip(),
+                    text=cleaned_text,
+                )
+            )
+
+            parsed_sections.append(
+                ParsedSection(
+                    title=f"Page {index + 1}",
+                    content=cleaned_text,
+                    page_number=index + 1,
                 )
             )
 
         return ParsedDocument(
+            sections=parsed_sections,
+            tables=[],
             pages=parsed_pages,
             total_pages=len(parsed_pages),
         )

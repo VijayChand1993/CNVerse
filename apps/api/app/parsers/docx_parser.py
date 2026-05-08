@@ -3,6 +3,8 @@ from docx import Document as DocxDocument
 from app.schemas.parser import (
     ParsedDocument,
     ParsedPage,
+    ParsedSection,
+    ParsedTable,
 )
 
 
@@ -13,60 +15,118 @@ class DOCXParser:
         file_path: str,
     ) -> ParsedDocument:
 
-        document = DocxDocument(file_path)
+        try:
 
-        parsed_pages = []
+            document = DocxDocument(file_path)
 
-        extracted_content = []
+            parsed_pages = []
+            parsed_sections = []
+            parsed_tables = []
 
-        # Paragraphs
-        for paragraph in document.paragraphs:
+            extracted_content = []
 
-            text = paragraph.text.strip()
-            style_name = (
-                paragraph.style.name.lower()
-            )
+            current_section_title = "Introduction"
+            current_section_content = []
 
-            if "heading" in style_name:
-                extracted_content.append(
-                    f"\n## {text}\n"
+            # Parse paragraphs
+            for paragraph in document.paragraphs:
+
+                text = paragraph.text.strip()
+
+                if not text:
+                    continue
+
+                style_name = (
+                    paragraph.style.name.lower()
                 )
-            else:
+
                 extracted_content.append(text)
 
-        # Tables
-        for table in document.tables:
+                if "heading" in style_name:
 
-            for row in table.rows:
+                    if current_section_content:
 
-                row_text = []
-
-                for cell in row.cells:
-
-                    cell_text = (
-                        cell.text.strip()
-                    )
-
-                    if cell_text:
-                        row_text.append(
-                            cell_text
+                        parsed_sections.append(
+                            ParsedSection(
+                                title=current_section_title,
+                                content="\n".join(
+                                    current_section_content
+                                ),
+                                page_number=1,
+                            )
                         )
 
-                if row_text:
-                    extracted_content.append(
-                        " | ".join(row_text)
+                    current_section_title = text
+
+                    current_section_content = []
+
+                else:
+                    current_section_content.append(
+                        text
                     )
 
-        parsed_pages.append(
-            ParsedPage(
-                page_number=1,
-                text="\n".join(
-                    extracted_content
-                ),
-            )
-        )
+            # Final section
+            if current_section_content:
 
-        return ParsedDocument(
-            pages=parsed_pages,
-            total_pages=len(parsed_pages),
-        )
+                parsed_sections.append(
+                    ParsedSection(
+                        title=current_section_title,
+                        content="\n".join(
+                            current_section_content
+                        ),
+                        page_number=1,
+                    )
+                )
+
+            # Parse tables
+            for table in document.tables:
+
+                headers = []
+                rows = []
+
+                for row_index, row in enumerate(
+                    table.rows
+                ):
+
+                    row_data = []
+
+                    for cell in row.cells:
+
+                        row_data.append(
+                            cell.text.strip()
+                        )
+
+                    if row_index == 0:
+                        headers = row_data
+                    else:
+                        rows.append(row_data)
+
+                parsed_tables.append(
+                    ParsedTable(
+                        title=None,
+                        headers=headers,
+                        rows=rows,
+                        page_number=1,
+                    )
+                )
+
+            parsed_pages.append(
+                ParsedPage(
+                    page_number=1,
+                    text="\n".join(
+                        extracted_content
+                    ),
+                )
+            )
+
+            return ParsedDocument(
+                sections=parsed_sections,
+                tables=parsed_tables,
+                pages=parsed_pages,
+                total_pages=len(parsed_pages),
+            )
+
+        except Exception as exc:
+            raise ValueError(
+                f"DOCX parsing failed: {exc}"
+            )

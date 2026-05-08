@@ -3,6 +3,8 @@ from openpyxl import load_workbook
 from app.schemas.parser import (
     ParsedDocument,
     ParsedPage,
+    ParsedSection,
+    ParsedTable,
 )
 
 
@@ -13,59 +15,94 @@ class XLSXParser:
         file_path: str,
     ) -> ParsedDocument:
 
-        workbook = load_workbook(
-            filename=file_path,
-            data_only=True,
-        )
+        try:
 
-        parsed_pages = []
-
-        page_number = 1
-
-        for sheet in workbook.worksheets:
-
-            extracted_rows = []
-
-            extracted_rows.append(
-                f"## Sheet: {sheet.title}"
+            workbook = load_workbook(
+                filename=file_path,
+                data_only=True,
             )
 
-            rows = list(sheet.iter_rows(values_only=True))
+            parsed_pages = []
+            parsed_sections = []
+            parsed_tables = []
 
-            for index, row in enumerate(rows):
+            page_number = 1
 
-                cleaned_row = []
+            for sheet in workbook.worksheets:
 
-                for cell in row:
-
-                    if cell is None:
-                        cleaned_row.append("")
-                    else:
-                        cleaned_row.append(
-                            str(cell).strip()
-                        )
-
-                if any(cleaned_row):
-
-                    row_text = " | ".join(cleaned_row)
-
-                    if index == 0:
-                        extracted_rows.append(f"HEADER: {row_text}")
-                    else:
-                        extracted_rows.append(row_text)
-
-            parsed_pages.append(
-                ParsedPage(
-                    page_number=page_number,
-                    text="\n".join(
-                        extracted_rows
-                    ),
+                rows = list(
+                    sheet.iter_rows(
+                        values_only=True
+                    )
                 )
+
+                if not rows:
+                    continue
+
+                headers = [
+                    str(cell).strip()
+                    if cell is not None
+                    else ""
+                    for cell in rows[0]
+                ]
+
+                table_rows = []
+
+                for row in rows[1:]:
+
+                    cleaned_row = [
+                        str(cell).strip()
+                        if cell is not None
+                        else ""
+                        for cell in row
+                    ]
+
+                    table_rows.append(cleaned_row)
+
+                parsed_tables.append(
+                    ParsedTable(
+                        title=sheet.title,
+                        headers=headers,
+                        rows=table_rows,
+                        page_number=page_number,
+                    )
+                )
+
+                section_content = "\n".join(
+                    [
+                        " | ".join(headers),
+                        *[
+                            " | ".join(row)
+                            for row in table_rows
+                        ],
+                    ]
+                )
+
+                parsed_sections.append(
+                    ParsedSection(
+                        title=sheet.title,
+                        content=section_content,
+                        page_number=page_number,
+                    )
+                )
+
+                parsed_pages.append(
+                    ParsedPage(
+                        page_number=page_number,
+                        text=section_content,
+                    )
+                )
+
+                page_number += 1
+
+            return ParsedDocument(
+                sections=parsed_sections,
+                tables=parsed_tables,
+                pages=parsed_pages,
+                total_pages=len(parsed_pages),
             )
 
-            page_number += 1
-
-        return ParsedDocument(
-            pages=parsed_pages,
-            total_pages=len(parsed_pages),
-        )
+        except Exception as exc:
+            raise ValueError(
+                f"Excel parsing failed: {exc}"
+            )
