@@ -37,3 +37,6 @@ apps/api/storage/url_download/*
 
 apps/api/storage/temp/*
 !apps/api/storage/temp/.gitkeep
+
+apps/api/storage/models/*
+!apps/api/storage/models/.gitkeep

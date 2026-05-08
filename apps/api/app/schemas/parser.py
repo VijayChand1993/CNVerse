@@ -31,3 +31,20 @@ class ParsedDocument(BaseModel):
     pages: list[ParsedPage]
 
     total_pages: int
+
+class ChunkMetadata(BaseModel):
+    document_id: int | None = None
+    document_title: str | None = None
+    file: str | None = None
+    source_type: str | None = None
+    tenant_id: int | None = None
+    owner_id: int | None = None
+    page: int | None = None
+    section: str | None = None
+    chunk_index: int | None = None
+    chunk_type: str | None = None
+
+class Chunk(BaseModel):
+    chunk_index: int
+    text: str
+    metadata: ChunkMetadata

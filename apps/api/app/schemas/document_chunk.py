@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel
+from app.schemas.parser import ChunkMetadata
 
 
 class DocumentChunkResponse(BaseModel):
@@ -8,7 +9,7 @@ class DocumentChunkResponse(BaseModel):
     document_id: int
     chunk_text: str
     chunk_index: int
-    metadata: dict | None
+    metadata: ChunkMetadata | None
     created_at: datetime
     updated_at: datetime
 

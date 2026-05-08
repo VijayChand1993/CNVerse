@@ -46,6 +46,11 @@ from app.services.parsing_service import (
 from app.services.deduplication_service import (
     DeduplicationService,
 )
+from app.parsers.docling_parser import (ParseResult)
+from app.schemas.parser import (ParsedDocument)
+from app.chunkers.markdown_chunker import (chunk_document, Chunk)
+from app.services.embedding_service import EmbeddingService
+from app.services.chunking_service import ChunkService
 
 router = APIRouter(
     prefix="/ingest",
@@ -53,10 +58,7 @@ router = APIRouter(
 )
 
 
-@router.post(
-    "/upload",
-    response_model=UploadResponse,
-)
+@router.post("/upload", response_model=UploadResponse,)
 async def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -137,10 +139,7 @@ async def upload_document(
         status=document.status,
     )
 
-@router.post(
-    "/url",
-    response_model=URLIngestionResponse,
-)
+@router.post("/url",response_model=URLIngestionResponse,)
 async def ingest_from_url(
     payload: URLIngestionRequest,
     db: Session = Depends(get_db),
@@ -268,9 +267,39 @@ async def parse_test(
         )
     )
 
-    if not parsed_document.pages:
-        raise ValueError(
-            "No content extracted"
-        )
+    if type(parsed_document) is ParseResult and not parsed_document.document:
+        raise ValueError("No content extracted")
 
     return parsed_document
+
+@router.post("/parse-chunk-test")
+async def parse_chunk_test(file: UploadFile = File(...),):
+    temp_dir = Path("./storage/temp")
+
+    temp_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    file_path = temp_dir / file.filename
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(
+            file.file,
+            buffer,
+        )
+
+    parsed_document = (
+        ParsingService.parse_document(
+            str(file_path)
+        )
+    )
+
+    if type(parsed_document) is ParseResult and not parsed_document.document:
+        raise ValueError("No content extracted")
+    
+    if type(parsed_document) is ParseResult:
+        if parsed_document.success:
+            chunks = ChunkService.chunk_docling_document(parsed_document)
+
+    return chunks
