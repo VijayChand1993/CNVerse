@@ -4,8 +4,24 @@ from app.db import base
 from app.core.config import settings
 from app.api.routes.health import router as health_router
 from app.api.routes.ingestion import (router as ingestion_router)
+from contextlib import asynccontextmanager
 
-app = FastAPI(title=settings.APP_NAME, version="1.0.0")
+from app.services.fallback_worker import (
+    start_fallback_worker,
+)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+
+    start_fallback_worker()
+
+    yield
+
+app = FastAPI(
+        title=settings.APP_NAME, 
+        version="1.0.0", 
+        lifespan=lifespan
+    )
 
 
 app.include_router(health_router)
