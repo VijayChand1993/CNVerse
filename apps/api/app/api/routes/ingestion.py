@@ -33,6 +33,7 @@ from urllib.parse import urlparse
 from app.schemas.ingestion import (
     URLIngestionRequest,
     URLIngestionResponse,
+    DuplicateDocumentResponse
 )
 from app.utils.download import download_file
 
@@ -40,6 +41,10 @@ from app.services.queue_service import QueueService
 
 from app.services.parsing_service import (
     ParsingService,
+)
+
+from app.services.deduplication_service import (
+    DeduplicationService,
 )
 
 router = APIRouter(
@@ -76,26 +81,29 @@ async def upload_document(
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    sha256_hash = generate_sha256(str(file_path))
-
-    existing_document = DocumentService.get_by_sha256(
-        db=db,
-        sha256_hash=sha256_hash,
+    dedup_result = (
+        DeduplicationService.check_duplicate(
+            db=db,
+            file_path=str(file_path),
+        )
     )
 
-    if existing_document:
+    if dedup_result["is_duplicate"]:
         os.remove(file_path)
 
         raise HTTPException(
             status_code=409,
-            detail="Duplicate document detected",
+            detail=DuplicateDocumentResponse(
+                message="Duplicate document detected",
+                document_id=dedup_result["document"].id
+            ).model_dump()
         )
 
     document = Document(
         title=file.filename,
         source_type="upload",
         source_url=str(file_path),
-        sha256_hash=sha256_hash,
+        sha256_hash=dedup_result["sha256_hash"],
         status=DocumentStatus.PENDING.value,
         visibility=DocumentVisibility.PRIVATE.value,
     )
@@ -177,26 +185,29 @@ async def ingest_from_url(
             detail=f"Failed to download file: {str(exc)}",
         )
 
-    sha256_hash = generate_sha256(str(file_path))
-
-    existing_document = DocumentService.get_by_sha256(
-        db=db,
-        sha256_hash=sha256_hash,
+    dedup_result = (
+        DeduplicationService.check_duplicate(
+            db=db,
+            file_path=str(file_path),
+        )
     )
 
-    if existing_document:
+    if dedup_result["is_duplicate"]:
         os.remove(file_path)
 
         raise HTTPException(
             status_code=409,
-            detail="Duplicate document detected",
+            detail=DuplicateDocumentResponse(
+                message="Duplicate document detected",
+                document_id=dedup_result["document"].id
+            ).model_dump()
         )
 
     document = Document(
         title=filename,
         source_type="url",
         source_url=str(payload.url),
-        sha256_hash=sha256_hash,
+        sha256_hash=dedup_result["sha256_hash"],
         status=DocumentStatus.PENDING.value,
         visibility=DocumentVisibility.PUBLIC.value,
     )

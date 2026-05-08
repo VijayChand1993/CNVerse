@@ -16,3 +16,8 @@ class URLIngestionResponse(BaseModel):
     filename: str
     source_url: str
     status: str
+
+
+class DuplicateDocumentResponse(BaseModel):
+    message: str
+    document_id: int
