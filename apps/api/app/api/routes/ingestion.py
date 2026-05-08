@@ -36,6 +36,8 @@ from app.schemas.ingestion import (
 )
 from app.utils.download import download_file
 
+from app.services.queue_service import QueueService
+
 router = APIRouter(
     prefix="/ingest",
     tags=["Ingestion"],
@@ -109,6 +111,12 @@ async def upload_document(
         db=db,
         job=ingestion_job,
     )
+
+    QueueService.enqueue_ingestion_job({
+        "document_id": document.id,
+        "ingestion_job_id": ingestion_job.id,
+        "retry_count": 0
+    })
 
     return UploadResponse(
         document_id=document.id,
@@ -204,6 +212,12 @@ async def ingest_from_url(
         db=db,
         job=ingestion_job,
     )
+
+    QueueService.enqueue_ingestion_job({
+        "document_id": document.id,
+        "ingestion_job_id": ingestion_job.id,
+        "retry_count": 0
+    })
 
     return URLIngestionResponse(
         document_id=document.id,
