@@ -38,6 +38,10 @@ from app.utils.download import download_file
 
 from app.services.queue_service import QueueService
 
+from app.services.parsing_service import (
+    ParsingService,
+)
+
 router = APIRouter(
     prefix="/ingest",
     tags=["Ingestion"],
@@ -226,3 +230,36 @@ async def ingest_from_url(
         source_url=str(payload.url),
         status=document.status,
     )
+
+@router.post("/parse-test")
+async def parse_test(
+    file: UploadFile = File(...),
+):
+
+    temp_dir = Path("./storage/temp")
+
+    temp_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    file_path = temp_dir / file.filename
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(
+            file.file,
+            buffer,
+        )
+
+    parsed_document = (
+        ParsingService.parse_document(
+            str(file_path)
+        )
+    )
+
+    if not parsed_document.pages:
+        raise ValueError(
+            "No content extracted"
+        )
+
+    return parsed_document

@@ -34,3 +34,6 @@ apps/api/storage/uploads/*
 
 apps/api/storage/url_download/*
 !apps/api/storage/url_download/.gitkeep
+
+apps/api/storage/temp/*
+!apps/api/storage/temp/.gitkeep
