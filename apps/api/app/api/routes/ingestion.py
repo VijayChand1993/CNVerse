@@ -372,3 +372,16 @@ async def search_test():
     )
 
     return results
+
+@router.get("/hybrid-search")
+async def hybrid_search():
+
+    results = (
+        RetrievalService
+        .hybrid_retrieve(
+            query="leave policy",
+            tenant_id=1,
+            visibility="public",
+        )
+    )
+    return results

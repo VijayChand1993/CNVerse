@@ -250,3 +250,49 @@ class OpenSearchService:
         )
 
         return response["hits"]["hits"]
+    
+    @staticmethod
+    def keyword_search(
+        query_text: str,
+        top_k=settings.OPENSEARCH_TOP_K_RESULTS,
+        tenant_id=None,
+        owner_id=None,
+        visibility=None,
+        role=None,
+    ):
+
+        filters = (
+            OpenSearchService
+            .build_metadata_filters(
+                tenant_id=tenant_id,
+                owner_id=owner_id,
+                visibility=visibility,
+                role=role,
+            )
+        )
+
+        query = {
+            "size": top_k,
+            "query": {
+                "bool": {
+                    "filter": filters,
+                    "must": {
+                        "match": {
+                            "text": query_text
+                        }
+                    },
+                }
+            },
+        }
+
+        response = (
+            OpenSearchService.client.search(
+                index=(
+                    settings
+                    .OPENSEARCH_INDEX_NAME
+                ),
+                body=query,
+            )
+        )
+
+        return response["hits"]["hits"]
