@@ -2,6 +2,7 @@ import os
 import shutil
 from pathlib import Path
 
+from app.services.opensearch_service import OpenSearchService
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
@@ -46,12 +47,13 @@ from app.services.parsing_service import (
 from app.services.deduplication_service import (
     DeduplicationService,
 )
-from app.parsers.docling_parser import (ParseResult)
+from app.parsers.docling_parser import (DoclingParser, ParseResult)
 from app.schemas.parser import (ParsedDocument)
 from app.chunkers.markdown_chunker import (chunk_document, Chunk)
 from app.services.embedding_service import EmbeddingService
 from app.services.chunking_service import ChunkService
 from app.services.embedding_service import (EmbeddingService,)
+from app.services.indexing_service import (IndexingService,)
 
 router = APIRouter(
     prefix="/ingest",
@@ -324,4 +326,35 @@ async def embed_test():
         "embedding_preview": (
             embedding[0][:10]
         ),
+    }
+
+@router.get("/opensearch-health")
+async def opensearch_health():
+
+    return (
+        OpenSearchService.health_check()
+    )
+
+@router.post("/index-test")
+async def index_test(file: UploadFile = File(...),):
+    temp_dir = Path("temp")
+    temp_dir.mkdir(parents=True,exist_ok=True,)
+
+    file_path = (temp_dir / file.filename)
+
+    with open(file_path, "wb") as buffer:
+
+        shutil.copyfileobj(file.file,buffer,)
+
+    parser = DoclingParser()
+    parse_result = (parser.parse(str(file_path)))
+
+    chunks = (
+        ChunkService.chunk_docling_document(parse_result.document, file_path))
+
+    result = (IndexingService.index_chunks(chunks))
+
+    return {
+        "chunks": len(chunks),
+        "indexing_result": result,
     }

@@ -40,3 +40,6 @@ apps/api/storage/temp/*
 
 apps/api/storage/models/*
 !apps/api/storage/models/.gitkeep
+
+apps/api/storage/temp/*
+!apps/api/storage/temp/.gitkeep

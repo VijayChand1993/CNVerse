@@ -5,6 +5,7 @@ from app.chunkers.markdown_chunker import (chunk_document)
 class ChunkService:
 
     @staticmethod
-    def chunk_docling_document(doc: DoclingDocument) -> list[Chunk]:
-        chunks = list(chunk_document(doc.document, source=doc.file_path))
+    def chunk_docling_document(doc: DoclingDocument, filepath: str) -> list[Chunk]:
+        # print(doc)
+        chunks = list(chunk_document(doc, source=filepath))
         return chunks
