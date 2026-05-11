@@ -1,6 +1,6 @@
 from app.services.embedding_service import (EmbeddingService,)
 from app.services.opensearch_service import (OpenSearchService,)
-
+from app.services.reranker_service import (RerankerService,)
 
 class RetrievalService:
 
@@ -59,7 +59,20 @@ class RetrievalService:
                                 role=role,
                                 ))
 
-        return (RetrievalService.merge_results(vector_results,keyword_results,))
+        merged_results = RetrievalService.merge_results(vector_results,keyword_results,)
+        
+        try:
+            reranked_results = (
+                RerankerService.rerank(
+                    query=query,
+                    results=merged_results,
+                    top_k=5,
+                )
+            )
+            return reranked_results
+        except Exception:
+            return merged_results[:5]
+        
     
 
     @staticmethod

@@ -385,3 +385,17 @@ async def hybrid_search():
         )
     )
     return results
+
+@router.get("/rerank-search")
+async def rerank_search():
+
+    results = (
+        RetrievalService
+        .hybrid_retrieve(
+            query="work from home policy",
+            tenant_id=1,
+            visibility="public",
+        )
+    )
+
+    return results
