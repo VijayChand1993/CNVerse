@@ -43,6 +43,9 @@ class ChunkMetadata(BaseModel):
     section: str | None = None
     chunk_index: int | None = None
     chunk_type: str | None = None
+    visibility: str | None = None
+    department: str | None = None
+    role: str | None = None
 
 class Chunk(BaseModel):
     chunk_index: int

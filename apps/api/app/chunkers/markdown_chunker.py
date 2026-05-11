@@ -49,6 +49,10 @@ def chunk_document(
                 chunk_index=index,
                 chunk_type="markdown",
                 page=page,
-                file=str(source)
+                file=str(source),
+                tenant_id=1,
+                visibility="public",
+                role="all",
+                department="all"
             )
         )

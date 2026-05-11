@@ -53,6 +53,15 @@ class OpenSearchService:
                         "chunk_type": {
                             "type": "keyword"
                         },
+                        "visibility": {
+                            "type": "keyword"
+                        },
+                        "role": {
+                            "type": "keyword"
+                        },
+                        "department": {
+                            "type": "keyword"
+                        },
                     }
                 },
             }
@@ -143,3 +152,101 @@ class OpenSearchService:
             "success": success,
             "failed": failed,
         }
+    
+    @staticmethod
+    def build_metadata_filters(
+        tenant_id=None,
+        owner_id=None,
+        visibility=None,
+        role=None,
+    ):
+
+        filters = []
+        if tenant_id:
+            filters.append(
+                {
+                    "term": {
+                        "metadata.tenant_id":
+                        tenant_id
+                    }
+                }
+            )
+
+        if owner_id:
+            filters.append(
+                {
+                    "term": {
+                        "metadata.owner_id":
+                        owner_id
+                    }
+                }
+            )
+
+        if visibility:
+            filters.append(
+                {
+                    "term": {
+                        "metadata.visibility":
+                        visibility
+                    }
+                }
+            )
+
+        if role:
+            filters.append(
+                {
+                    "term": {
+                        "metadata.role":
+                        role
+                    }
+                }
+            )
+
+        return filters
+    
+    @staticmethod
+    def vector_search(
+        query_embedding,
+        top_k=settings.OPENSEARCH_TOP_K_RESULTS,
+        tenant_id=None,
+        owner_id=None,
+        visibility=None,
+        role=None,
+    ):
+
+        filters = (
+            OpenSearchService
+            .build_metadata_filters(
+                tenant_id=tenant_id,
+                owner_id=owner_id,
+                visibility=visibility,
+                role=role,
+            )
+        )
+
+        query = {
+            "size": top_k,
+            "query": {
+                "bool": {
+                    "filter": filters,
+                    "must": {
+                        "knn": {
+                            "embedding": {
+                                "vector":
+                                query_embedding,
+                                "k": top_k,
+                            }
+                        }
+                    },
+                }
+            },
+        }
+
+        response = (
+            OpenSearchService.client.search(
+                index=(settings.OPENSEARCH_INDEX_NAME),
+                body=query,
+            )
+        )
+
+        return response["hits"]["hits"]

@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     OPENSEARCH_USERNAME: str = "admin"
     OPENSEARCH_PASSWORD: str = "CNVerse@OpenSearch2026!"
     OPENSEARCH_INDEX_NAME: str = ("cnverse_chunks")
+    OPENSEARCH_TOP_K_RESULTS: int = 5
 
     class Config:
         env_file = ".env"

@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 from app.services.opensearch_service import OpenSearchService
+from app.services.retrieval_service import RetrievalService
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
@@ -358,3 +359,16 @@ async def index_test(file: UploadFile = File(...),):
         "chunks": len(chunks),
         "indexing_result": result,
     }
+
+@router.get("/search-test")
+async def search_test():
+
+    results = (
+        RetrievalService.retrieve(
+            query="leave policy",
+            tenant_id=1,
+            visibility="public",
+        )
+    )
+
+    return results
