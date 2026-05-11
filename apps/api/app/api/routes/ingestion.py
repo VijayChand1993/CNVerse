@@ -51,6 +51,7 @@ from app.schemas.parser import (ParsedDocument)
 from app.chunkers.markdown_chunker import (chunk_document, Chunk)
 from app.services.embedding_service import EmbeddingService
 from app.services.chunking_service import ChunkService
+from app.services.embedding_service import (EmbeddingService,)
 
 router = APIRouter(
     prefix="/ingest",
@@ -242,9 +243,7 @@ async def ingest_from_url(
     )
 
 @router.post("/parse-test")
-async def parse_test(
-    file: UploadFile = File(...),
-):
+async def parse_test(file: UploadFile = File(...),):
 
     temp_dir = Path("./storage/temp")
 
@@ -303,3 +302,26 @@ async def parse_chunk_test(file: UploadFile = File(...),):
             chunks = ChunkService.chunk_docling_document(parsed_document)
 
     return chunks
+
+@router.post("/embed-test")
+async def embed_test():
+
+    sample_text = (
+        "Employees are entitled "
+        "to 20 annual leave days."
+    )
+
+    embedding = (
+        EmbeddingService.embed_documents(
+            [sample_text]
+        )
+    )
+
+    return {
+        "dimension": len(
+            embedding[0]
+        ),
+        "embedding_preview": (
+            embedding[0][:10]
+        ),
+    }

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     URL_DOWNLOAD_DIR: str
     MAX_UPLOAD_SIZE_MB: int = 100
 
+    EMBEDDING_MODEL_NAME: str = ("storage/models/bge-base-en-v1.5")
+
     class Config:
         env_file = ".env"
 
