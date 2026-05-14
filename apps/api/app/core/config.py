@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     OPENSEARCH_INDEX_NAME: str = ("cnverse_chunks")
     OPENSEARCH_TOP_K_RESULTS: int = 20
 
+    OPENAI_MODEL: str = ("gpt-4o-mini")
+    CHAT_MEMORY_MAX_TOKENS: int = (5000)
+    CHAT_MEMORY_MAX_MESSAGES: int = (20)
+
+    RERANKER_MODEL: str = ("storage/models/bge-reranker-v2-m3")
+    TOKENIZER_MODEL: str = ("storage/models/all-MiniLM-L6-v2")
+
     class Config:
         env_file = ".env"
 

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.dependencies import (get_db,)
 from app.schemas.chat_message import (MessageResponse,)
 from app.services.message_service import (MessageService,)
+from app.services.memory_service import (MemoryService,)
 
 router = APIRouter(
     prefix="/messages",
@@ -11,13 +12,8 @@ router = APIRouter(
 )
 
 @router.get(
-    "/{session_id}",
-    response_model=list[
-        MessageResponse
-    ],
-)
+    "/{session_id}", response_model=list[MessageResponse],)
 async def get_messages( session_id: int, db: Session = Depends(get_db),):
-
     messages = (
         MessageService
         .get_session_messages(
@@ -27,3 +23,9 @@ async def get_messages( session_id: int, db: Session = Depends(get_db),):
     )
 
     return messages
+
+@router.get("/{session_id}/memory")
+async def memory_context(session_id: int, db: Session = Depends(get_db),):
+    context = (MemoryService.prepare_conversation_context(db=db, session_id=session_id,))
+
+    return context

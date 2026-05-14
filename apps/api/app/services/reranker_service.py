@@ -1,11 +1,10 @@
 import torch
-
 from transformers import (AutoModelForSequenceClassification,AutoTokenizer,)
-
+from app.core.config import (settings,)
 
 class RerankerService:
 
-    MODEL_NAME = ("storage/models/bge-reranker-v2-m3")
+    MODEL_NAME = (settings.RERANKER_MODEL)
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, local_files_only=True)
 

@@ -9,12 +9,12 @@ from docling.chunking import HybridChunker
 from docling_core.types.doc import DoclingDocument
 from transformers import AutoTokenizer            # file path
 from app.schemas.parser import (Chunk, ChunkMetadata)
-
+from app.core.config import (settings,)
 
 def chunk_document(
     doc: DoclingDocument,
     source: str,
-    tokenizer_name: str = "storage/models/all-MiniLM-L6-v2", #"sentence-transformers/all-MiniLM-L6-v2",
+    tokenizer_name: str = settings.TOKENIZER_MODEL, #"sentence-transformers/all-MiniLM-L6-v2",
     max_tokens: int = 512,
 ) -> Iterator[Chunk]:
     """

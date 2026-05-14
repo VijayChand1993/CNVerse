@@ -278,31 +278,22 @@ async def parse_test(file: UploadFile = File(...),):
 async def parse_chunk_test(file: UploadFile = File(...),):
     temp_dir = Path("./storage/temp")
 
-    temp_dir.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+    temp_dir.mkdir(parents=True, exist_ok=True,)
 
     file_path = temp_dir / file.filename
 
     with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(
-            file.file,
-            buffer,
-        )
+        shutil.copyfileobj( file.file, buffer,)
 
     parsed_document = (
-        ParsingService.parse_document(
-            str(file_path)
-        )
-    )
+        ParsingService.parse_document(str(file_path)))
 
     if type(parsed_document) is ParseResult and not parsed_document.document:
         raise ValueError("No content extracted")
     
     if type(parsed_document) is ParseResult:
         if parsed_document.success:
-            chunks = ChunkService.chunk_docling_document(parsed_document)
+            chunks = ChunkService.chunk_docling_document(parsed_document.document, parsed_document.file_path)
 
     return chunks
 
@@ -349,6 +340,8 @@ async def index_test(file: UploadFile = File(...),):
 
     parser = DoclingParser()
     parse_result = (parser.parse(str(file_path)))
+
+    print(parse_result)
 
     chunks = (
         ChunkService.chunk_docling_document(parse_result.document, file_path))
