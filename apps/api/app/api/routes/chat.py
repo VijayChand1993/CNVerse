@@ -1,6 +1,9 @@
 from fastapi import (APIRouter, WebSocket, WebSocketDisconnect,)
 from app.websocket.connection_manager import (manager,)
 import asyncio
+from app.services.message_service import (MessageService,)
+
+from app.db.session import SessionLocal
 
 router = APIRouter()
 
@@ -16,6 +19,16 @@ async def chat_socket(websocket: WebSocket,):
         while True:
             data = (await websocket.receive_json())
             user_message = data.get("message")
+            session_id = data.get("session_id")
+
+            db = SessionLocal()
+
+            MessageService.create_message(
+                db=db,
+                session_id=session_id,
+                role="user",
+                content=user_message,
+            )
 
             response = ("CNVerse streaming response")
 
@@ -27,9 +40,18 @@ async def chat_socket(websocket: WebSocket,):
 
                 await asyncio.sleep(0.2)
 
+            MessageService.create_message(
+                db=db,
+                session_id=session_id,
+                role="assistant",
+                content=response,
+            )
+
             await manager.send_message(
                 user_id=user_id,
                 message={"type": "done"},)
 
     except WebSocketDisconnect:
         manager.disconnect(user_id)
+    finally:
+        db.close()

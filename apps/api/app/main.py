@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from app.services.fallback_worker import (start_fallback_worker,)
 from app.api.routes.chat import (router as chat_router,)
 from app.api.routes.sessions import (router as sessions_router,)
+from app.api.routes.messages import (router as messages_router,)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,3 +26,4 @@ app.include_router(health_router)
 app.include_router(ingestion_router)
 app.include_router(chat_router)
 app.include_router(sessions_router)
+app.include_router(messages_router)
