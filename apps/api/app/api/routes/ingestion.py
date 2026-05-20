@@ -341,8 +341,6 @@ async def index_test(file: UploadFile = File(...),):
     parser = DoclingParser()
     parse_result = (parser.parse(str(file_path)))
 
-    print(parse_result)
-
     chunks = (
         ChunkService.chunk_docling_document(parse_result.document, file_path))
 

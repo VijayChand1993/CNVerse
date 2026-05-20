@@ -5,3 +5,5 @@ from app.models.document_chunk import DocumentChunk
 from app.models.chat_message import ChatMessage
 from app.models.chat_session import ChatSession
 from app.models.ingestion_job import IngestionJob
+from app.models.graph_execution_state import (GraphExecutionState,)
+from app.models.graph_execution_history import (GraphExecutionHistory,)
